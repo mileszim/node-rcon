@@ -9,36 +9,32 @@
  * You need to manually `npm install keypress` for this example to work
  */
 
-var Rcon = require('../node-rcon');
+import keypress from 'keypress';
+import Rcon from 'node-rcon';
 
-var conn = new Rcon('localhost', 1234, 'password');
-conn.on('auth', function() {
-  console.log("Authed!");
+let conn = new Rcon('localhost', 1234, 'password');
 
-}).on('response', function(str) {
-  console.log("Got response: " + str);
-
-}).on('end', function() {
-  console.log("Socket closed!");
-  process.exit();
-
-});
+conn.on('auth',     ()    => { console.log("Authed!"); })
+    .on('response', (str) => { console.log("Got response: " + str); })
+    .on('end',      ()    => { console.log("Socket closed!"); process.exit(); });
 
 conn.connect();
 
 
-require('keypress')(process.stdin);
+keypress(process.stdin);
 process.stdin.setRawMode(true);
 process.stdin.resume();
 
-var buffer = "";
+let buffer = "";
 
-process.stdin.on('keypress', function(chunk, key) {
+process.stdin.on('keypress', (chunk, key) => {
   if (key && key.ctrl && (key.name == 'c' || key.name == 'd')) {
     conn.disconnect();
     return;
   }
+
   process.stdout.write(chunk);
+  
   if (key && (key.name == 'enter' || key.name == 'return')) {
     conn.send(buffer);
     buffer = "";
@@ -49,5 +45,4 @@ process.stdin.on('keypress', function(chunk, key) {
   } else {
     buffer += chunk;
   }
-
 });
